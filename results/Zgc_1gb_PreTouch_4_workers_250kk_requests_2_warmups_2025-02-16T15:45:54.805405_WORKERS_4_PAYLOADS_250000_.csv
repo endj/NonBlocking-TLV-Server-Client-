@@ -1,0 +1,5 @@
+worker_id,success,failed,timeouts,channelsOpened,channelsReused,channelsClosed,requestsRegistered,requestCompleted,channelConnected,channelConnectionErrors,requestDurationMs,connectDurationMs
+0,250000,0,0,1,249999,0,250000,250000,1,0,15479,0
+1,250000,0,0,1,249999,0,250000,250000,1,0,15427,0
+2,250000,0,0,1,249999,0,250000,250000,1,0,15571,0
+3,250000,0,0,1,249999,0,250000,250000,1,0,15625,1
