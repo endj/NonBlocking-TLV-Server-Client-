@@ -1,6 +1,12 @@
-package se.edinjakupovic;
+package se.edinjakupovic.single_reactor;
+
+import se.edinjakupovic.ClientStatus;
+import se.edinjakupovic.MessageHandler;
+import se.edinjakupovic.ServerClientContext;
+import se.edinjakupovic.ServerConfig;
 
 import java.io.IOException;
+import java.net.StandardSocketOptions;
 import java.nio.ByteBuffer;
 import java.nio.channels.SelectionKey;
 import java.nio.channels.Selector;
@@ -9,13 +15,13 @@ import java.nio.channels.SocketChannel;
 import java.util.Map;
 import java.util.logging.Logger;
 
-public class Server {
+public class SingleReactorServer {
     private static final Logger log = Logger.getLogger("Server");
     private final ServerConfig config;
     private final Map<Byte, MessageHandler> handlers;
     private final MessageHandler errorHandler;
 
-    public Server(ServerConfig config) {
+    public SingleReactorServer(ServerConfig config) {
         this.config = config;
         this.handlers = config.handlers();
         this.errorHandler = config.errorHandler();
@@ -52,8 +58,6 @@ public class Server {
         if (Thread.currentThread().isInterrupted()) print("Server stopped");
     }
 
-    int count = 0;
-
     private void write(SelectionKey key) throws IOException {
         SocketChannel channel = (SocketChannel) key.channel();
         ServerClientContext clientCtx = (ServerClientContext) key.attachment();
@@ -64,16 +68,13 @@ public class Server {
             return;
         }
         if (!clientCtx.responseBuffer.hasRemaining()) {
-            print("Finished writing to client " + count);
             if (clientCtx.keepAlive) {
                 clientCtx.resetCtx();
-                print("Resetting client " + count++);
                 key.interestOps(SelectionKey.OP_READ);
             } else {
                 closeChannel(key);
             }
         } else {
-            print("Wrote " + write + " to client " + count);
             key.interestOps(SelectionKey.OP_WRITE);
         }
     }
@@ -81,7 +82,6 @@ public class Server {
     private void read(SelectionKey key) throws IOException {
         SocketChannel clientChannel = (SocketChannel) key.channel();
         ServerClientContext state = (ServerClientContext) key.attachment();
-        print("Reading " + count);
         try {
             if (state.status == ClientStatus.READING_HEADER) {
                 int read = state.readHeader(clientChannel, key);
@@ -102,7 +102,6 @@ public class Server {
                 }
                 if (read == 0) return;
                 if (!state.bodyBuffer.hasRemaining()) {
-                    print("Processing client " + count);
                     processMessage(key, state.tlvType, state.bodyBuffer);
                 }
             }
@@ -129,15 +128,14 @@ public class Server {
         SocketChannel client = serverSocket.accept();
         if (client == null) return;
         client.configureBlocking(false);
+        client.setOption(StandardSocketOptions.TCP_NODELAY, true);
         ServerClientContext clientCtx = new ServerClientContext(config.config().headerSizeBytes());
-        print("SERVER ACCEPTED NEW CLIENT ");
         client.register(selector, SelectionKey.OP_READ, clientCtx);
     }
 
     private void closeChannel(SelectionKey key) {
         if (key == null) return;
         SocketChannel channel = (SocketChannel) key.channel();
-        print("SERVER CLOSING CHANNEL");
         try {
             key.cancel();
             channel.close();

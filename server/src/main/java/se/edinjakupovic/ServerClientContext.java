@@ -9,17 +9,17 @@ import static se.edinjakupovic.ServerConstants.TLV_TYPE_MASK;
 import static se.edinjakupovic.utils.PayloadUtils.isKeepAlive;
 
 public class ServerClientContext {
-    ClientStatus status;
+    public ClientStatus status;
 
-    final ByteBuffer headerBuffer;
-    byte tlvType = -1;
-    int requestLength = -1;
+    public final ByteBuffer headerBuffer;
+    public byte tlvType = -1;
+    public int requestLength = -1;
 
-    ByteBuffer bodyBuffer;
-    ByteBuffer responseBuffer;
-    int responseLength;
+    public ByteBuffer bodyBuffer;
+    public ByteBuffer responseBuffer;
+    public int responseLength;
 
-    boolean keepAlive;
+    public boolean keepAlive;
 
     public ServerClientContext(int headerSize) {
         headerBuffer = ByteBuffer.allocate(headerSize);
@@ -55,7 +55,9 @@ public class ServerClientContext {
         keepAlive = isKeepAlive(typeByte);
 
         requestLength = headerBuffer.getInt();
-        bodyBuffer = ByteBuffer.allocate(requestLength);
+        if (bodyBuffer == null || bodyBuffer.capacity() < requestLength) {
+            bodyBuffer = ByteBuffer.allocate(requestLength);
+        }
         status = ClientStatus.READING_BODY;
     }
 
@@ -63,7 +65,7 @@ public class ServerClientContext {
         headerBuffer.clear();
         tlvType = -1;
         requestLength = -1;
-        bodyBuffer = null;
+        bodyBuffer.clear();
         responseBuffer = null;
         responseLength = 0;
         status = ClientStatus.READING_HEADER;

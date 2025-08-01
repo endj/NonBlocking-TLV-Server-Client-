@@ -1,6 +1,0 @@
-worker_id,success,failed,timeouts,channelsOpened,channelsReused,channelsClosed,requestsRegistered,requestCompleted,channelConnected,channelConnectionErrors,requestDurationMs,connectDurationMs
-0,200000,0,0,1,199999,0,200000,200000,1,0,14747,0
-1,200000,0,0,1,199999,0,200000,200000,1,0,14740,1
-2,200000,0,0,1,199999,0,200000,200000,1,0,14816,1
-3,200000,0,0,1,199999,0,200000,200000,1,0,14733,0
-4,200000,0,0,1,199999,0,200000,200000,1,0,14749,0

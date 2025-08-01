@@ -61,12 +61,12 @@ public class NioClient {
                     && sharedKey.isValid();
 
             if (shouldReuseChannel) {
-                print("Reusing channel on request " + request.id + " channels opened" + state.channelsOpened);
+                //print("Reusing channel on request " + request.id + " channels opened" + state.channelsOpened);
                 sharedKey = sharedChannel.register(selector, SelectionKey.OP_WRITE, request);
                 state.channelsReused++;
             } else {
                 state.channelsOpened++;
-                print("Opening new channel " + request.id + " channels opened " + state.channelsOpened);
+                //print("Opening new channel " + request.id + " channels opened " + state.channelsOpened);
                 SocketChannel channel = SocketChannel.open();
                 channel.configureBlocking(false);
 
@@ -244,9 +244,9 @@ public class NioClient {
 
         @Override
         public String toString() {
-            return "reqDurationMs=" + requestDurationMs +
-                    ", reqAvgDurationMs=" + ((double) requestDurationMs / requestCompleted) + "ms" +
-                    ", conAvgDurationMs=" + ((double) connectDurationMs / requestCompleted) + "ms" +
+            return "reqDurationMs=" + formatDuration(requestDurationMs) +
+                    ", reqAvgDuration=" + formatDuration((double) requestDurationMs / requestCompleted) +
+                    ", conAvgDuration=" + formatDuration((double) connectDurationMs / requestCompleted) +
                     ", reqCompleted=" + requestCompleted +
                     ", chanOpened=" + channelsOpened +
                     ", chanClosed=" + channelsClosed +
@@ -255,6 +255,16 @@ public class NioClient {
                     ", chanConnectionErrors=" + channelConnectionErrors +
                     ", clientId='" + clientId + '\'' +
                     ", reqRegistered=" + requestsRegistered;
+        }
+
+        private String formatDuration(double ms) {
+            if (ms >= 1.0) {
+                return String.format("%.2f ms", ms);
+            } else if (ms >= 0.001) {
+                return String.format("%.2f µs", ms * 1000);
+            } else {
+                return String.format("%.0f ns", ms * 1_000_000);
+            }
         }
     }
 }

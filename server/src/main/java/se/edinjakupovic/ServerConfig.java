@@ -10,6 +10,7 @@ public record ServerConfig(
         long responseTimeoutMillis,
         int connectionBacklog,
         int maxConnections,
+        int workers,
         Map<Byte, MessageHandler> handlers,
         MessageHandler errorHandler
 ) {

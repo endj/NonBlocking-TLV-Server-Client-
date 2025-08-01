@@ -1,6 +1,7 @@
 package se.edinjakupovic.utils;
 
 import se.edinjakupovic.*;
+import se.edinjakupovic.single_reactor.SingleReactorServer;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
@@ -11,7 +12,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
 public class TestServer implements AutoCloseable {
-    Server server;
+    SingleReactorServer server;
     ExecutorService executor;
 
     public static TestServer withHandler(Byte type, MessageHandler handler) {
@@ -23,7 +24,7 @@ public class TestServer implements AutoCloseable {
     }
 
     private TestServer(Map<Byte, MessageHandler> handlers) {
-        this.server = new Server(new ServerConfig(
+        this.server = new SingleReactorServer(new ServerConfig(
                 new InetSocketAddress(8080),
                 new TLVConfig(
                         5, 1000
@@ -32,6 +33,7 @@ public class TestServer implements AutoCloseable {
                 1000L,
                 0,
                 1000,
+                1,
                 handlers,
                 _ -> ServerConstants.ERROR_TYPE_BASE
         ));
@@ -53,7 +55,6 @@ public class TestServer implements AutoCloseable {
             }
         });
         try {
-
             if (!latch.await(1, TimeUnit.SECONDS))
                 throw new RuntimeException("Server did not start in 1 second");
         } catch (InterruptedException e) {

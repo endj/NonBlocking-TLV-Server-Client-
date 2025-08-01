@@ -58,6 +58,7 @@ java -jar analysis/build/libs/analysis.jar --workers=<workerCount> --payloads=<p
 java -Xmx1G -Xms1G -XX:+UseZGC -XX:+AlwaysPreTouch \
 -jar analysis/build/libs/analysis.jar \
 --workers=<workers> \
+--clients=<client> \
 --payloads=<payloads> \
 --warmups=2 \
 --name="Zgc 1gb PreTouch <worker> worker <worker * payloads> requests 2 warmups"
@@ -89,80 +90,35 @@ java -Xmx1G -Xms1G -XX:+UseZGC -XX:+AlwaysPreTouch \
 ### Run with Flight Record
 
 ```
-java -Xmx1G -Xms1G -XX:+UseG1GC -XX:+AlwaysPreTouch \
-  -XX:StartFlightRecording=duration=60s,filename=flight-recording.jfr,level=info \
-  -jar analysis/build/libs/analysis.jar \
-   --workers=1 \
-    --payloads=100000 \
-     --warmups=2 \
-      --name="G1 1gb PreTouch 1 worker 100k request 2 warmups JFR"
+java -Xmx1G -Xms1G -XX:+UseG1GC -XX:+AlwaysPreTouch -XX:StartFlightRecording=duration=60s,filename=flight-recording.jfr,level=info -jar analysis/build/libs/analysis.jar \
+--workers=8 \
+--clients=8 \
+--payloads=1000000 \
+--warmups=1 \
+--strategy=multi \
+--name="G1GC 1gb PreTouch 8 workers 8 clients 1000k request 0 warmups"
 ```
 
 
-### Run with GC Logging
+#### G1GC
 
-#### GC1
-GC logs
 ```
-java -Xmx1G -Xms1G -XX:+UseG1GC -XX:+AlwaysPreTouch \
- -Xlog:"gc*=info:stdout:time,tid" \
-  -jar analysis/build/libs/analysis.jar \
-   --workers=1 \
-    --payloads=100000 \
-     --warmups=2 \
-      --name="G1 1gb PreTouch 1 worker 100k request 2 warmups GC info"
-```
-Without
-```
-java -Xmx1G -Xms1G -XX:+UseG1GC -XX:+AlwaysPreTouch \
-  -jar analysis/build/libs/analysis.jar \
-   --workers=1 \
-    --payloads=100000 \
-     --warmups=2 \
-      --name="G1 1gb PreTouch 1 worker 100k request 2 warmups"
+java -XX:+UseNUMA -Xmx1G -Xms1G -XX:+UseG1GC -XX:+UseStringDeduplication -XX:MaxGCPauseMillis=20 -jar analysis/build/libs/analysis.jar \
+--workers=4 \
+--clients=4 \
+--payloads=1000000 \
+--warmups=1 \
+--strategy=multi \
+--name="G1GC 1gb PreTouch 8 workers 8 clients 1000k request 0 warmups"
 ```
 
 
-#### ZGC
-
-GC Logs
 ```
-java -Xmx1G -Xms1G -XX:+UseZGC -XX:+AlwaysPreTouch \
- -Xlog:"gc*=info:stdout:time,tid" \
-  -jar analysis/build/libs/analysis.jar \
-   --workers=1 \
-    --payloads=100000 \
-     --warmups=2 \
-      --name="Zgc 1gb PreTouch 1 worker 100k request 2 warmups GC info"
-```
-Without
-```
-java -Xmx1G -Xms1G -XX:+UseZGC -XX:+AlwaysPreTouch \
-  -jar analysis/build/libs/analysis.jar \
-   --workers=1 \
-    --payloads=1000000 \
-     --warmups=2 \
-      --name="Zgc 1gb PreTouch 1 worker 1000k request 2 warmups"
-```
-
-### Serial
-
-GC Logs
-```
-java -Xmx1G -XX:+UseSerialGC \
- -Xlog:"gc*=info:stdout:time,tid" \
-  -jar analysis/build/libs/analysis.jar \
-   --workers=1 \
-    --payloads=100000 \
-    --warmups=2 \
-     --name="Serial 1gb 1 worker 100k request 2 warmups GC info"
-```
-Without
-```
-java -Xmx1G -XX:+UseSerialGC \
-  -jar analysis/build/libs/analysis.jar \
-   --workers=1 \
-    --payloads=1000000 \
-    --warmups=2 \
-     --name="Serial 1gb 1 worker 1000k request 2 warmups"
+java -XX:+UseNUMA -Xmx1G -Xms1G -XX:+UseG1GC -XX:+UseStringDeduplication -XX:MaxGCPauseMillis=20 -jar analysis/build/libs/analysis.jar \
+--workers=1 \
+--clients=5 \
+--payloads=200000 \
+--warmups=1 \
+--strategy=single \
+--name="G1GC 1gb PreTouch 8 workers 8 clients 1000k request 0 warmups"
 ```
